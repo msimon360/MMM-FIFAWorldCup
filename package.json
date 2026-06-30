@@ -1,0 +1,11 @@
+{
+  "name": "MMM-FIFAWorldCup",
+  "version": "2.0.0",
+  "description": "MagicMirror² — FIFA World Cup 2026 mirrored knockout bracket",
+  "main": "MMM-FIFAWorldCup.js",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "node-fetch": "^2.7.0"
+  },
+  "license": "MIT"
+}

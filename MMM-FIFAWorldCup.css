@@ -1,0 +1,203 @@
+/* MMM-FIFAWorldCup.css — Mirrored bracket layout */
+
+.wc-wrapper {
+  font-family: inherit;
+  color: #fff;
+  padding: 0;
+  width: 100%;
+}
+
+/* ── Outer flex: [left half] [trophy] [right half] ── */
+.wc-bracket {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+}
+
+/* ── Each half is a row of round columns ── */
+.wc-half {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1;
+}
+
+/* Left half: rounds flow R32→R16→QF→SF, left to right */
+.wc-half-left  { flex-direction: row; }
+
+/* Right half: DOM order R32→R16→QF→SF, flex-direction:row-reverse.
+   row-reverse renders the LAST child first (leftmost), so Semis (last)
+   ends up nearest the trophy, and R32 (first) ends up at the screen edge. */
+.wc-half-right { flex-direction: row-reverse; }
+
+/* ── Round column ── */
+.wc-round {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.wc-round-title {
+  font-size: 0.58em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  padding-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wc-matches {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-around;
+}
+
+/* ── Match wrapper: [card][connector] or [connector][card] ── */
+.wc-match-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Connector arms ── */
+.wc-conn-out,
+.wc-conn-in {
+  width: 8px;
+  flex-shrink: 0;
+  align-self: stretch;
+  position: relative;
+}
+
+/* Right-side connector (outgoing, left half): horizontal line + vertical bracket arm */
+.wc-conn-out svg,
+.wc-conn-in  svg {
+  width: 8px;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* ── Match card ── */
+.wc-match-card {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+}
+
+/* ── Team row ── */
+.wc-team-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  font-size: 0.68em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.wc-team-row.wc-winner {
+  background: rgba(56, 142, 60, 0.25);
+  color: #a5d6a7;
+  font-weight: 600;
+}
+
+.wc-team-row.wc-tbd {
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+
+.wc-team-flag {
+  font-size: 1.1em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.wc-team-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wc-team-score {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  min-width: 12px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.wc-team-row.wc-winner .wc-team-score {
+  color: #a5d6a7;
+}
+
+.wc-match-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.wc-match-date {
+  font-size: 0.58em;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  padding: 1px 3px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.wc-live-badge {
+  font-size: 0.55em;
+  font-weight: 700;
+  color: #ef5350;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 1px 3px;
+  background: rgba(239,83,80,0.15);
+  border-top: 1px solid rgba(239,83,80,0.25);
+}
+
+/* ── Trophy / Champion center column ── */
+.wc-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.wc-trophy {
+  font-size: 1.8em;
+  line-height: 1;
+}
+
+.wc-champion-name {
+  font-size: 0.6em;
+  color: #f9a825;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  max-width: 60px;
+  word-break: break-word;
+}
+
+/* ── Timestamp ── */
+.wc-updated {
+  font-size: 0.5em;
+  color: rgba(255,255,255,0.2);
+  text-align: right;
+  margin-top: 4px;
+}
