@@ -1,4 +1,4 @@
-/* MMM-FIFAWorldCup.css — Mirrored bracket layout */
+/* MMM-FIFAWorldCup.css — Mirrored bracket layout (CSS Grid) */
 
 .wc-wrapper {
   font-family: inherit;
@@ -16,28 +16,19 @@
   width: 100%;
 }
 
-/* ── Each half is a row of round columns ── */
 .wc-half {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 1;
-}
-
-/* Left half: rounds flow R32→R16→QF→SF, left to right */
-.wc-half-left  { flex-direction: row; }
-
-/* Right half: DOM order R32→R16→QF→SF, flex-direction:row-reverse.
-   row-reverse renders the LAST child first (leftmost), so Semis (last)
-   ends up nearest the trophy, and R32 (first) ends up at the screen edge. */
-.wc-half-right { flex-direction: row-reverse; }
-
-/* ── Round column ── */
-.wc-round {
-  display: flex;
-  flex-direction: column;
   flex: 1;
   min-width: 0;
+}
+
+/* ── Grid: each half is its own grid — 4 columns x (1 header row + N rows) ── */
+.wc-grid-half {
+  display: grid;
+  flex: 1;
+  width: 100%;
+  column-gap: 4px;
+  row-gap: 0;
 }
 
 .wc-round-title {
@@ -51,21 +42,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  align-self: end;
 }
 
-.wc-matches {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: space-around;
-}
-
-/* ── Match wrapper: [card][connector] or [connector][card] ── */
+/* ── Match wrapper sits inside its grid cell, vertically centred ── */
 .wc-match-wrap {
   display: flex;
   align-items: center;
-  flex: 1;
   min-height: 0;
+  align-self: stretch;
 }
 
 /* ── Connector arms ── */
@@ -77,7 +62,6 @@
   position: relative;
 }
 
-/* Right-side connector (outgoing, left half): horizontal line + vertical bracket arm */
 .wc-conn-out svg,
 .wc-conn-in  svg {
   width: 8px;

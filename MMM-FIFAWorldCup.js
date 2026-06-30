@@ -1,11 +1,14 @@
-/* MMM-FIFAWorldCup.js — Mirrored bracket edition
+/* MMM-FIFAWorldCup.js — Mirrored bracket edition (Grid layout)
+ *
+ * Uses CSS Grid instead of flexbox for vertical alignment.
+ * Each Round-of-32 match occupies exactly 1 grid row. Each later round's
+ * match spans 2x the rows of the round before it and is centred via
+ * `align-self: center`, so it naturally lines up between its two feeders
+ * regardless of how many matches are in play — fixing the previous
+ * "Quarters/Semis labels float over the wrong matches" issue.
  *
  * Layout (visual, left→right):
  *   [R32][R16][QF][SF] 🏆 [SF][QF][R16][R32]
- *
- * The right half uses flex-direction:row-reverse so the DOM order
- * SF→QF→R16→R32 renders visually as R32←R16←QF←SF from the screen
- * edge inward to the trophy.
  */
 
 Module.register("MMM-FIFAWorldCup", {
@@ -43,16 +46,16 @@ Module.register("MMM-FIFAWorldCup", {
       return wrapper;
     }
 
-    const rounds  = this.bracket;
+    const rounds = this.bracket;
     const r32 = rounds.find(r => r.id === "R32");
     const r16 = rounds.find(r => r.id === "R16");
     const qf  = rounds.find(r => r.id === "QF");
     const sf  = rounds.find(r => r.id === "SF");
     const fin = rounds.find(r => r.id === "F");
 
-    const h    = arr => Math.ceil(arr.length / 2);
-    const top  = r   => r ? r.matches.slice(0, h(r.matches)) : [];
-    const bot  = r   => r ? r.matches.slice(h(r.matches))    : [];
+    const h   = arr => Math.ceil(arr.length / 2);
+    const top = r   => r ? r.matches.slice(0, h(r.matches)) : [];
+    const bot = r   => r ? r.matches.slice(h(r.matches))    : [];
 
     // Champion
     let champion = null;
@@ -61,25 +64,23 @@ Module.register("MMM-FIFAWorldCup", {
       champion = (m.winner === m.teamA?.abbr ? m.teamA : m.teamB)?.name || null;
     }
 
+    // Each half always reserves 4 round slots (R32,R16,QF,SF) — even if a
+    // later round has zero matches yet — so grid row math stays consistent
+    // and columns don't jump around as the tournament progresses.
+    const ROW_BASE = 8; // each HALF has at most 8 Round-of-32 matches (16 total / 2 halves)
+
     const bracketEl = document.createElement("div");
     bracketEl.className = "wc-bracket";
 
-    // ── Left half: DOM order R32→R16→QF→SF, flex-direction:row ──
-    //    Visually: R32 at screen edge, SF nearest trophy  ✓
     const leftHalf = document.createElement("div");
     leftHalf.className = "wc-half wc-half-left";
-    [
-      { id:"R32", matches: top(r32) },
-      { id:"R16", matches: top(r16) },
-      { id:"QF",  matches: top(qf)  },
-      { id:"SF",  matches: top(sf)  },
-    ].forEach(({ id, matches }, i, arr) => {
-      leftHalf.appendChild(
-        this._buildRoundCol(id, matches, "left", i === 0, i === arr.length - 1)
-      );
-    });
+    leftHalf.appendChild(this._buildGridHalf([
+      { id: "R32", matches: top(r32) },
+      { id: "R16", matches: top(r16) },
+      { id: "QF",  matches: top(qf)  },
+      { id: "SF",  matches: top(sf)  },
+    ], "left", ROW_BASE));
 
-    // ── Centre ──
     const centre = document.createElement("div");
     centre.className = "wc-center";
     const trophy = document.createElement("div");
@@ -93,21 +94,14 @@ Module.register("MMM-FIFAWorldCup", {
       centre.appendChild(el);
     }
 
-    // ── Right half: DOM order R32→R16→QF→SF, flex-direction:row-reverse ──
-    //    row-reverse renders last child (SF) leftmost → nearest trophy.
-    //    First child (R32) renders rightmost → at the screen edge.  ✓
     const rightHalf = document.createElement("div");
     rightHalf.className = "wc-half wc-half-right";
-    [
-      { id:"R32", matches: bot(r32) },
-      { id:"R16", matches: bot(r16) },
-      { id:"QF",  matches: bot(qf)  },
-      { id:"SF",  matches: bot(sf)  },
-    ].forEach(({ id, matches }, i, arr) => {
-      rightHalf.appendChild(
-        this._buildRoundCol(id, matches, "right", i === 0, i === arr.length - 1)
-      );
-    });
+    rightHalf.appendChild(this._buildGridHalf([
+      { id: "R32", matches: bot(r32) },
+      { id: "R16", matches: bot(r16) },
+      { id: "QF",  matches: bot(qf)  },
+      { id: "SF",  matches: bot(sf)  },
+    ], "right", ROW_BASE));
 
     bracketEl.appendChild(leftHalf);
     bracketEl.appendChild(centre);
@@ -124,47 +118,69 @@ Module.register("MMM-FIFAWorldCup", {
     return wrapper;
   },
 
-  // ── Round column ────────────────────────────────────────────────────────────
+  // ── Grid half builder ──────────────────────────────────────────────────────
+  // Builds one half (4 round columns) as a single CSS Grid so that every
+  // round's matches are vertically centred against their real feeder slots,
+  // using row-span doubling: R32=1 row, R16=2 rows, QF=4 rows, SF=8 rows.
 
-  _buildRoundCol(id, matches, side, isOutermost, isInnermost) {
-    const col = document.createElement("div");
-    col.className = "wc-round";
+  _buildGridHalf(roundDefs, side, rowBase) {
+    const half = document.createElement("div");
+    half.className = "wc-grid-half";
+    half.style.gridTemplateColumns = `repeat(${roundDefs.length}, 1fr)`;
+    half.style.gridTemplateRows = `repeat(${rowBase}, 1fr)`;
 
-    const title = document.createElement("div");
-    title.className = "wc-round-title";
-    title.textContent = this._roundLabel(id);
-    col.appendChild(title);
+    // visual column order differs for left vs right (right is mirrored)
+    const colOrder = side === "left"
+      ? [0, 1, 2, 3]   // R32,R16,QF,SF left→right
+      : [3, 2, 1, 0];  // SF,QF,R16,R32 left→right (so R32 lands at outer edge)
 
-    const matchesEl = document.createElement("div");
-    matchesEl.className = "wc-matches";
+    roundDefs.forEach((def, defIdx) => {
+      const rowSpan = Math.pow(2, defIdx); // R32:1, R16:2, QF:4, SF:8
+      const gridCol = colOrder[defIdx] + 1; // CSS grid is 1-indexed
 
-    matches.forEach((m, i) => {
-      const wrap = document.createElement("div");
-      wrap.className = "wc-match-wrap";
+      // Title spans the same column, sits in an implicit header row above
+      const title = document.createElement("div");
+      title.className = "wc-round-title";
+      title.textContent = this._roundLabel(def.id);
+      title.style.gridColumn = `${gridCol} / span 1`;
+      title.style.gridRow = `1`;
+      half.appendChild(title);
 
-      const card   = this._buildCard(m);
-      const cIn    = this._connIn();
-      const cOut   = this._connOut(i);
+      def.matches.forEach((m, i) => {
+        // startRow = 2 (row 1 is the header) + i * rowSpan.
+        // Verified by hand: this packs each round's matches back-to-back
+        // with zero gaps, and each later round's match exactly spans and
+        // centres over its corresponding pair of matches from the round
+        // before it. No extra offset or multiplier needed.
+        const startRow = 2 + i * rowSpan;
 
-      if (side === "left") {
-        // Left: [cIn?][card][cOut?]   cIn from outer round, cOut brackets toward trophy
-        if (!isOutermost) wrap.appendChild(cIn);
-        wrap.appendChild(card);
-        if (!isInnermost) wrap.appendChild(cOut);
-      } else {
-        // Right (row-reversed): visually this column is flipped, so connectors swap sides.
-        // cOut goes on the LEFT of the card (toward trophy, which is to the left after flip)
-        // cIn  goes on the RIGHT (from outer round, which is to the right after flip)
-        if (!isInnermost) wrap.appendChild(cOut);
-        wrap.appendChild(card);
-        if (!isOutermost) wrap.appendChild(cIn);
-      }
+        const wrap = document.createElement("div");
+        wrap.className = "wc-match-wrap";
+        wrap.style.gridColumn = `${gridCol} / span 1`;
+        wrap.style.gridRow = `${startRow} / span ${Math.max(rowSpan, 1)}`;
 
-      matchesEl.appendChild(wrap);
+        const isOutermost = defIdx === 0;
+        const isInnermost = defIdx === roundDefs.length - 1;
+        const card = this._buildCard(m);
+        const cIn  = this._connIn();
+        const cOut = this._connOut(i);
+
+        const trophySide = (side === "left"); // toward-trophy side is right for left half, left for right half
+        if (trophySide) {
+          if (!isOutermost) wrap.appendChild(cIn);
+          wrap.appendChild(card);
+          if (!isInnermost) wrap.appendChild(cOut);
+        } else {
+          if (!isInnermost) wrap.appendChild(cOut);
+          wrap.appendChild(card);
+          if (!isOutermost) wrap.appendChild(cIn);
+        }
+
+        half.appendChild(wrap);
+      });
     });
 
-    col.appendChild(matchesEl);
-    return col;
+    return half;
   },
 
   // Straight horizontal stub (incoming from previous round)
