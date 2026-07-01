@@ -29,6 +29,8 @@ const NodeHelper = require("node_helper");
 let _fetch;
 try { _fetch = fetch; } catch { _fetch = require("node-fetch"); }
 
+// Try https://api.fifa.com/api/v3/seasonbracket/season/285023?language=en Instead
+
 const ESPN_SCOREBOARD_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const ESPN_STANDINGS_URL   = "https://site.web.api.espn.com/apis/v2/sports/soccer/fifa.world/standings";
 
