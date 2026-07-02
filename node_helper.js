@@ -45,53 +45,161 @@ module.exports = NodeHelper.create({
   },
 
   async fetchBracket() {
+    console.log(`[${this.name}] Fetching ${FIFA_BRACKET_URL}`);
+
     try {
       const res = await _fetch(FIFA_BRACKET_URL, {
         headers: {
           "User-Agent": "MagicMirror/MMM-FIFAWorldCup",
-          "Accept":     "application/json",
-        },
-        timeout: 15000,
+          "Accept": "application/json"
+        }
       });
 
-      if (!res.ok) throw new Error(`FIFA API HTTP ${res.status}`);
+      console.log(`[${this.name}] HTTP ${res.status}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
       const data = await res.json();
 
-      const bracket = this.parseBracket(data);
-      console.log(`[${this.name}] parsed ${bracket.length} rounds from FIFA API`);
-      bracket.forEach(r => console.log(`[${this.name}]   ${r.id}: ${r.matches.length} matches`));
+      console.log(`[${this.name}] JSON received`);
+      console.log(`[${this.name}] KnockoutStages: ${data.KnockoutStages?.length}`);
 
-      this.sendSocketNotification("WC_BRACKET_RESULT", { bracket });
+      const bracket = this.parseBracket(data);
+
+      console.log(`[${this.name}] Parsed ${bracket.length} rounds`);
+
+      this.sendSocketNotification("WC_BRACKET_RESULT", {
+        bracket
+      });
 
     } catch (err) {
-      console.error(`[${this.name}] fetch failed:`, err.message);
-      this.sendSocketNotification("WC_BRACKET_ERROR", err.message);
+      console.error(`[${this.name}]`);
+      console.error(err);
+      console.error(err.stack);
+
+      this.sendSocketNotification(
+        "WC_BRACKET_ERROR",
+        err.toString()
+      );
     }
   },
 
-  parseBracket(data) {
-    const stages = data?.KnockoutStages ?? [];
-    const bracket = [];
+parseBracket(data) {
+    const stages = [...(data.KnockoutStages || [])].sort(
+        (a, b) => a.SequenceOrder - b.SequenceOrder
+    );
 
-    for (const stage of stages) {
-      const rawName = (stage.Name?.[0]?.Description ?? "").trim();
-      const id = ROUND_ID_MAP[rawName.toLowerCase()] ?? null;
-      if (!id) {
-        console.warn(`[${this.name}] skipping unknown stage: "${rawName}"`);
-        continue;
-      }
-      // Skip the 3rd place playoff — not shown in the main bracket
-      if (id === "3RD") continue;
-
-      const matches = (stage.Matches ?? [])
-        .sort((a, b) => new Date(a.Date) - new Date(b.Date))
-        .map(m => this.parseMatch(m));
-
-      bracket.push({ id, name: rawName, matches });
+    function getDescription(value) {
+        if (!value) return "";
+        if (typeof value === "string") return value;
+        if (Array.isArray(value)) return value[0]?.Description || "";
+        return value.Description || "";
     }
+
+    function resolveRoundId(stageName) {
+        return ROUND_ID_MAP[stageName.toLowerCase()] ?? null;
+    }
+
+    // #region agent log
+    const _dbg = (location, message, data, hypothesisId) => fetch('http://127.0.0.1:7410/ingest/b5ec576d-c6bb-49b5-8b61-41830ca1df08',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ec99f7'},body:JSON.stringify({sessionId:'ec99f7',location,message,data,timestamp:Date.now(),runId:'post-fix',hypothesisId})}).catch(()=>{});
+    // #endregion
+
+    // IdStage → stage, IdStage → roundId, roundId → stage
+    const stageById = {};
+    const roundIdByStageId = {};
+    const stageByRoundId = {};
+    stages.forEach(stage => {
+        const stageName = getDescription(stage.Name);
+        const roundId = resolveRoundId(stageName);
+        stageById[stage.IdStage] = stage;
+        roundIdByStageId[stage.IdStage] = roundId;
+        if (roundId) stageByRoundId[roundId] = stage;
+    });
+
+    // #region agent log
+    _dbg('node_helper.js:stageTables','Stage ID tables built',{stages:stages.map(s=>({IdStage:s.IdStage,SequenceOrder:s.SequenceOrder,name:getDescription(s.Name),roundId:roundIdByStageId[s.IdStage]})),r16IdStage:stageByRoundId.R16?.IdStage},'A');
+    // #endregion
+
+    function reorderR32FromNextRound(r32Matches, nextStage) {
+        const lookup = new Map();
+        r32Matches.forEach(m => lookup.set(String(m.IdMatch), m));
+
+        const ordered = [];
+        let missedRefs = 0;
+
+        [...(nextStage.Matches || [])]
+            .sort((a, b) => a.MatchNumber - b.MatchNumber)
+            .forEach(nextMatch => {
+                const a = lookup.get(String(nextMatch.TeamA));
+                const b = lookup.get(String(nextMatch.TeamB));
+                if (!a) missedRefs++;
+                if (!b) missedRefs++;
+                if (a) ordered.push(a);
+                if (b) ordered.push(b);
+            });
+
+        return { ordered, missedRefs };
+    }
+
+    const bracket = stages
+        .map(stage => {
+            const stageName = getDescription(stage.Name);
+            const roundId = resolveRoundId(stageName);
+            if (!roundId || roundId === "3RD") return null;
+
+            let matches = [...(stage.Matches || [])];
+
+            if (roundId === "R32") {
+                const nextStage = stages.find(
+                    s => s.SequenceOrder === stage.SequenceOrder + 1
+                );
+                const r16 = nextStage && roundIdByStageId[nextStage.IdStage] === "R16"
+                    ? nextStage
+                    : stageByRoundId.R16;
+
+                // #region agent log
+                const r32Before = matches.map(m => ({id:m.IdMatch,num:m.MatchNumber,home:m.HomeTeam?.Abbreviation||m.PlaceHolderA,away:m.AwayTeam?.Abbreviation||m.PlaceHolderB}));
+                _dbg('node_helper.js:R32reorder','R32 reorder inputs',{r32IdStage:stage.IdStage,r32Seq:stage.SequenceOrder,r16IdStage:r16?.IdStage,r16MatchOrderUnsorted:r16?.Matches?.map(m=>m.MatchNumber),r16MatchOrderSorted:r16?.Matches?.slice().sort((a,b)=>a.MatchNumber-b.MatchNumber).map(m=>m.MatchNumber)},'B');
+                // #endregion
+
+                if (r16) {
+                    const { ordered, missedRefs } = reorderR32FromNextRound(matches, r16);
+
+                    // #region agent log
+                    _dbg('node_helper.js:R32reorderResult','R32 reorder outcome',{orderedCount:ordered.length,totalCount:matches.length,missedRefs,applied:ordered.length===matches.length,leftHalfTop8:ordered.slice(0,8).map(m=>(m.HomeTeam?.Abbreviation||'?')+' v '+(m.AwayTeam?.Abbreviation||'?'))},'C');
+                    // #endregion
+
+                    if (ordered.length === matches.length) {
+                        matches = ordered;
+                    }
+                } else {
+                    // #region agent log
+                    _dbg('node_helper.js:R32reorderSkip','R32 reorder skipped - no R16 stage found',{r32Before},'D');
+                    // #endregion
+                }
+            } else {
+                matches.sort((a, b) => a.MatchNumber - b.MatchNumber);
+            }
+
+            return {
+                id: roundId,
+                name: stageName,
+                matches: matches.map(m => this.parseMatch(m))
+            };
+        })
+        .filter(Boolean)
+        .filter(round =>
+            ["R32", "R16", "QF", "SF", "F"].includes(round.id)
+        );
+
+    // #region agent log
+    _dbg('node_helper.js:filterResult','Final bracket rounds after filter',{roundIds:bracket.map(r=>r.id)},'E');
+    // #endregion
 
     return bracket;
-  },
+},
 
   parseMatch(m) {
     const home = m.HomeTeam;
