@@ -5,7 +5,8 @@ A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays 
 **Data source:** ESPN's public soccer API (no API key required), with a built-in placeholder bracket as a fallback so the module always shows something even if ESPN is unreachable.
 
 ---
-
+## ScreenShot
+---
 ## Installation
 
 ```bash
