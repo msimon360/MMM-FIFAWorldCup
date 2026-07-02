@@ -6,6 +6,8 @@ A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays 
 
 ---
 ## ScreenShot
+<img width="864" height="430" alt="image" src="https://github.com/user-attachments/assets/f4037245-b5ca-4508-bf0d-4d39210cee8b" />
+
 ---
 ## Installation
 
