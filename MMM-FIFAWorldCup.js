@@ -52,6 +52,7 @@ Module.register("MMM-FIFAWorldCup", {
     const qf  = rounds.find(r => r.id === "QF");
     const sf  = rounds.find(r => r.id === "SF");
     const fin = rounds.find(r => r.id === "F");
+    const third = rounds.find(r => r.id === "3RD");
 
     const h   = arr => Math.ceil(arr.length / 2);
     const top = r   => r ? r.matches.slice(0, h(r.matches)) : [];
@@ -81,18 +82,7 @@ Module.register("MMM-FIFAWorldCup", {
       { id: "SF",  matches: top(sf)  },
     ], "left", ROW_BASE));
 
-    const centre = document.createElement("div");
-    centre.className = "wc-center";
-    const trophy = document.createElement("div");
-    trophy.className = "wc-trophy";
-    trophy.textContent = "🏆";
-    centre.appendChild(trophy);
-    if (champion) {
-      const el = document.createElement("div");
-      el.className = "wc-champion-name";
-      el.textContent = champion;
-      centre.appendChild(el);
-    }
+    const centre = this._buildCenterColumn(fin, third, champion);
 
     const rightHalf = document.createElement("div");
     rightHalf.className = "wc-half wc-half-right";
@@ -183,7 +173,46 @@ Module.register("MMM-FIFAWorldCup", {
     return half;
   },
 
-  // Straight horizontal stub (incoming from previous round)
+  _buildCenterColumn(fin, third, champion) {
+    const centre = document.createElement("div");
+    centre.className = "wc-center";
+
+    if (fin?.matches?.length) {
+      centre.appendChild(this._buildCenterMatch("F", fin.matches[0]));
+    }
+
+    const trophy = document.createElement("div");
+    trophy.className = "wc-trophy";
+    trophy.textContent = "🏆";
+    centre.appendChild(trophy);
+
+    if (champion) {
+      const el = document.createElement("div");
+      el.className = "wc-champion-name";
+      el.textContent = champion;
+      centre.appendChild(el);
+    }
+
+    if (third?.matches?.length) {
+      centre.appendChild(this._buildCenterMatch("3RD", third.matches[0]));
+    }
+
+    return centre;
+  },
+
+  _buildCenterMatch(roundId, match) {
+    const block = document.createElement("div");
+    block.className = "wc-center-match";
+
+    const title = document.createElement("div");
+    title.className = "wc-center-title";
+    title.textContent = this._roundLabel(roundId);
+    block.appendChild(title);
+
+    block.appendChild(this._buildCard(match));
+    return block;
+  },
+
   _connIn() {
     const div = document.createElement("div");
     div.className = "wc-conn-in";
@@ -227,13 +256,14 @@ Module.register("MMM-FIFAWorldCup", {
 
   _teamRow(team, score, isWinner) {
     const row = document.createElement("div");
+    const placeholder = team?.isPlaceholder;
     const tbd = !team || team.abbr === "TBD" || team.name === "TBD";
     row.className = "wc-team-row" +
       (isWinner && this.config.colored ? " wc-winner" : "") +
-      (tbd ? " wc-tbd" : "");
+      ((tbd || placeholder) ? " wc-tbd" : "");
 
     const flag = document.createElement("span"); flag.className = "wc-team-flag";
-    flag.textContent = tbd ? "" : this._flag(team.abbr);
+    flag.textContent = (tbd || placeholder) ? "" : this._flag(team.abbr);
 
     const name = document.createElement("span"); name.className = "wc-team-name";
     name.textContent = tbd ? "TBD" : (team.name || team.abbr);
@@ -248,11 +278,11 @@ Module.register("MMM-FIFAWorldCup", {
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
   _roundLabel(id) {
-    return { R32:"Rd of 32", R16:"Rd of 16", QF:"Quarters", SF:"Semis", F:"Final" }[id] || id;
+    return { R32:"Rd of 32", R16:"Rd of 16", QF:"Quarters", SF:"Semis", "3RD":"3rd Place", F:"Final" }[id] || id;
   },
 
   _flag(abbr) {
-    if (!abbr) return "";
+    if (!abbr || /\d/.test(abbr)) return "";
     const map = {
       MEX:"MX",RSA:"ZA",KOR:"KR",CZE:"CZ",SUI:"CH",CAN:"CA",BIH:"BA",QAT:"QA",
       BRA:"BR",MAR:"MA",SCO:"GB",HTI:"HT",USA:"US",AUS:"AU",PAR:"PY",TUR:"TR",

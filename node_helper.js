@@ -6,6 +6,7 @@
  * This returns the complete knockout bracket in a single call:
  *   data.KnockoutStages[] — array of rounds in order
  *     .Name[0].Description — round name (e.g. "Round of 32")
+ *     .IdStage / .SequenceOrder — stable stage identity and bracket order
  *     .Matches[] — array of matches
  *       .HomeTeam / .AwayTeam — team objects with name, abbreviation, score
  *       .HomeTeamPenaltyScore / .AwayTeamPenaltyScore — penalty shootout scores
@@ -86,120 +87,86 @@ module.exports = NodeHelper.create({
     }
   },
 
-parseBracket(data) {
+  parseBracket(data) {
     const stages = [...(data.KnockoutStages || [])].sort(
-        (a, b) => a.SequenceOrder - b.SequenceOrder
+      (a, b) => a.SequenceOrder - b.SequenceOrder
     );
 
     function getDescription(value) {
-        if (!value) return "";
-        if (typeof value === "string") return value;
-        if (Array.isArray(value)) return value[0]?.Description || "";
-        return value.Description || "";
+      if (!value) return "";
+      if (typeof value === "string") return value;
+      if (Array.isArray(value)) return value[0]?.Description || "";
+      return value.Description || "";
     }
 
     function resolveRoundId(stageName) {
-        return ROUND_ID_MAP[stageName.toLowerCase()] ?? null;
+      return ROUND_ID_MAP[stageName.toLowerCase()] ?? null;
     }
 
-    // #region agent log
-    const _dbg = (location, message, data, hypothesisId) => fetch('http://127.0.0.1:7410/ingest/b5ec576d-c6bb-49b5-8b61-41830ca1df08',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ec99f7'},body:JSON.stringify({sessionId:'ec99f7',location,message,data,timestamp:Date.now(),runId:'post-fix',hypothesisId})}).catch(()=>{});
-    // #endregion
-
-    // IdStage → stage, IdStage → roundId, roundId → stage
-    const stageById = {};
+    // IdStage → roundId and roundId → stage lookup tables from JSON
     const roundIdByStageId = {};
     const stageByRoundId = {};
     stages.forEach(stage => {
-        const stageName = getDescription(stage.Name);
-        const roundId = resolveRoundId(stageName);
-        stageById[stage.IdStage] = stage;
-        roundIdByStageId[stage.IdStage] = roundId;
-        if (roundId) stageByRoundId[roundId] = stage;
+      const stageName = getDescription(stage.Name);
+      const roundId = resolveRoundId(stageName);
+      roundIdByStageId[stage.IdStage] = roundId;
+      if (roundId) stageByRoundId[roundId] = stage;
     });
 
-    // #region agent log
-    _dbg('node_helper.js:stageTables','Stage ID tables built',{stages:stages.map(s=>({IdStage:s.IdStage,SequenceOrder:s.SequenceOrder,name:getDescription(s.Name),roundId:roundIdByStageId[s.IdStage]})),r16IdStage:stageByRoundId.R16?.IdStage},'A');
-    // #endregion
-
     function reorderR32FromNextRound(r32Matches, nextStage) {
-        const lookup = new Map();
-        r32Matches.forEach(m => lookup.set(String(m.IdMatch), m));
+      const lookup = new Map();
+      r32Matches.forEach(m => lookup.set(String(m.IdMatch), m));
 
-        const ordered = [];
-        let missedRefs = 0;
+      const ordered = [];
+      [...(nextStage.Matches || [])]
+        .sort((a, b) => a.MatchNumber - b.MatchNumber)
+        .forEach(nextMatch => {
+          const a = lookup.get(String(nextMatch.TeamA));
+          const b = lookup.get(String(nextMatch.TeamB));
+          if (a) ordered.push(a);
+          if (b) ordered.push(b);
+        });
 
-        [...(nextStage.Matches || [])]
-            .sort((a, b) => a.MatchNumber - b.MatchNumber)
-            .forEach(nextMatch => {
-                const a = lookup.get(String(nextMatch.TeamA));
-                const b = lookup.get(String(nextMatch.TeamB));
-                if (!a) missedRefs++;
-                if (!b) missedRefs++;
-                if (a) ordered.push(a);
-                if (b) ordered.push(b);
-            });
-
-        return { ordered, missedRefs };
+      return ordered;
     }
 
-    const bracket = stages
-        .map(stage => {
-            const stageName = getDescription(stage.Name);
-            const roundId = resolveRoundId(stageName);
-            if (!roundId || roundId === "3RD") return null;
+    return stages
+      .map(stage => {
+        const stageName = getDescription(stage.Name);
+        const roundId = resolveRoundId(stageName);
+        if (!roundId) return null;
 
-            let matches = [...(stage.Matches || [])];
+        let matches = [...(stage.Matches || [])];
 
-            if (roundId === "R32") {
-                const nextStage = stages.find(
-                    s => s.SequenceOrder === stage.SequenceOrder + 1
-                );
-                const r16 = nextStage && roundIdByStageId[nextStage.IdStage] === "R16"
-                    ? nextStage
-                    : stageByRoundId.R16;
+        if (roundId === "R32") {
+          const nextStage = stages.find(
+            s => s.SequenceOrder === stage.SequenceOrder + 1
+          );
+          const r16 = nextStage && roundIdByStageId[nextStage.IdStage] === "R16"
+            ? nextStage
+            : stageByRoundId.R16;
 
-                // #region agent log
-                const r32Before = matches.map(m => ({id:m.IdMatch,num:m.MatchNumber,home:m.HomeTeam?.Abbreviation||m.PlaceHolderA,away:m.AwayTeam?.Abbreviation||m.PlaceHolderB}));
-                _dbg('node_helper.js:R32reorder','R32 reorder inputs',{r32IdStage:stage.IdStage,r32Seq:stage.SequenceOrder,r16IdStage:r16?.IdStage,r16MatchOrderUnsorted:r16?.Matches?.map(m=>m.MatchNumber),r16MatchOrderSorted:r16?.Matches?.slice().sort((a,b)=>a.MatchNumber-b.MatchNumber).map(m=>m.MatchNumber)},'B');
-                // #endregion
-
-                if (r16) {
-                    const { ordered, missedRefs } = reorderR32FromNextRound(matches, r16);
-
-                    // #region agent log
-                    _dbg('node_helper.js:R32reorderResult','R32 reorder outcome',{orderedCount:ordered.length,totalCount:matches.length,missedRefs,applied:ordered.length===matches.length,leftHalfTop8:ordered.slice(0,8).map(m=>(m.HomeTeam?.Abbreviation||'?')+' v '+(m.AwayTeam?.Abbreviation||'?'))},'C');
-                    // #endregion
-
-                    if (ordered.length === matches.length) {
-                        matches = ordered;
-                    }
-                } else {
-                    // #region agent log
-                    _dbg('node_helper.js:R32reorderSkip','R32 reorder skipped - no R16 stage found',{r32Before},'D');
-                    // #endregion
-                }
-            } else {
-                matches.sort((a, b) => a.MatchNumber - b.MatchNumber);
+          if (r16) {
+            const ordered = reorderR32FromNextRound(matches, r16);
+            if (ordered.length === matches.length) {
+              matches = ordered;
             }
+          }
+        } else {
+          matches.sort((a, b) => a.MatchNumber - b.MatchNumber);
+        }
 
-            return {
-                id: roundId,
-                name: stageName,
-                matches: matches.map(m => this.parseMatch(m))
-            };
-        })
-        .filter(Boolean)
-        .filter(round =>
-            ["R32", "R16", "QF", "SF", "F"].includes(round.id)
-        );
-
-    // #region agent log
-    _dbg('node_helper.js:filterResult','Final bracket rounds after filter',{roundIds:bracket.map(r=>r.id)},'E');
-    // #endregion
-
-    return bracket;
-},
+        return {
+          id: roundId,
+          name: stageName,
+          matches: matches.map(m => this.parseMatch(m))
+        };
+      })
+      .filter(Boolean)
+      .filter(round =>
+        ["R32", "R16", "QF", "SF", "3RD", "F"].includes(round.id)
+      );
+  },
 
   parseMatch(m) {
     const home = m.HomeTeam;
@@ -237,11 +204,21 @@ parseBracket(data) {
       teamA: home ? {
         name: home.TeamName?.[0]?.Description ?? home.ShortClubName ?? "TBD",
         abbr: home.Abbreviation ?? "TBD",
-      } : { name: "TBD", abbr: "TBD" },
+        isPlaceholder: false,
+      } : {
+        name: m.PlaceHolderA || "TBD",
+        abbr: m.PlaceHolderA || "TBD",
+        isPlaceholder: true,
+      },
       teamB: away ? {
         name: away.TeamName?.[0]?.Description ?? away.ShortClubName ?? "TBD",
         abbr: away.Abbreviation ?? "TBD",
-      } : { name: "TBD", abbr: "TBD" },
+        isPlaceholder: false,
+      } : {
+        name: m.PlaceHolderB || "TBD",
+        abbr: m.PlaceHolderB || "TBD",
+        isPlaceholder: true,
+      },
       scoreA: scoreH,
       scoreB: scoreA,
       penA:   penH,
