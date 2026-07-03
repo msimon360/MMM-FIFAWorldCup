@@ -2,7 +2,7 @@
 
 A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays a live, mirrored FIFA World Cup 2026 knockout bracket — Round of 32 through the Final, with the trophy in the centre.
 
-**Data source:** ESPN's public soccer API (no API key required), with a built-in placeholder bracket as a fallback so the module always shows something even if ESPN is unreachable.
+**Data source:** FIFA's public soccer API (no API key required), with a built-in placeholder bracket as a fallback so the module always shows something even if FIFA is unreachable.
 
 ---
 ## ScreenShot
@@ -63,7 +63,7 @@ Round of 32 sits at each screen edge, narrowing inward through Round of 16, Quar
 
 ## How it works
 
-1. **`node_helper.js`** runs on the Pi and calls ESPN's public soccer API (`site.api.espn.com`) every `updateInterval` ms, requesting the FIFA World Cup 2026 bracket.
+1. **`node_helper.js`** runs on the Pi and calls FIFA's public soccer API (`api.fifa.com`) every `updateInterval` ms, requesting the FIFA World Cup 2026 bracket.
 2. If the dedicated bracket endpoint isn't populated yet, it falls back to building the bracket from the live scoreboard feed.
 3. If neither source returns usable knockout-stage data (e.g. early in the tournament before the bracket is set), it falls back to a built-in placeholder bracket based on the official draw, so the module never shows a blank screen.
 4. The bracket data is sent to the front-end via `sendSocketNotification`.
@@ -74,7 +74,7 @@ Round of 32 sits at each screen edge, narrowing inward through Round of 16, Quar
 
 ## Troubleshooting
 
-- **Module shows "Loading bracket…" forever** — check `pm2 logs mm` for errors from `[MMM-FIFAWorldCup]`. This usually means the node helper's fetch is failing silently; confirm your Pi has internet access to `site.api.espn.com`.
+- **Module shows "Loading bracket…" forever** — check `pm2 logs mm` for errors from `[MMM-FIFAWorldCup]`. This usually means the node helper's fetch is failing silently; confirm your Pi has internet access to `api.fifa.com`.
 - **Bracket shows but layout looks off** — after editing any module file, you need a **full restart** (`pm2 restart mm`), not just a browser refresh. Electron can cache stale CSS/JS.
 - **Changes don't seem to apply at all** — confirm the file actually copied over correctly:
   ```bash
