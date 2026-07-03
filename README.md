@@ -13,7 +13,7 @@ A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays 
 
 ```bash
 cd ~/MagicMirror/modules
-git clone https://github.com/YOUR_USERNAME/MMM-FIFAWorldCup
+git clone https://github.com/msimon360/MMM-FIFAWorldCup
 # — or just copy the folder over —
 cd MMM-FIFAWorldCup
 npm install
