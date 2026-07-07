@@ -1,0 +1,13 @@
+{
+  "name": "MMM-BracketEngine",
+  "version": "1.0.0",
+  "description": "MagicMirror² — generalized knockout bracket engine with pluggable sport providers",
+  "main": "MMM-BracketEngine.js",
+  "scripts": {
+    "test": "node test/validate.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "license": "MIT"
+}

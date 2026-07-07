@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "title": "Sample Tournament Bracket",
+    "sport": "soccer",
+    "icon": "⚽"
+  },
+  "rounds": [
+    {
+      "id": "R16",
+      "name": "Round of 16",
+      "matches": [
+        {
+          "id": 1,
+          "status": "final",
+          "date": "Jul 1",
+          "teamA": { "name": "Germany", "abbr": "GER", "isPlaceholder": false },
+          "teamB": { "name": "Paraguay", "abbr": "PAR", "isPlaceholder": false },
+          "scoreA": 2,
+          "scoreB": 1,
+          "winner": "GER"
+        },
+        {
+          "id": 2,
+          "status": "final",
+          "date": "Jul 1",
+          "teamA": { "name": "France", "abbr": "FRA", "isPlaceholder": false },
+          "teamB": { "name": "Sweden", "abbr": "SWE", "isPlaceholder": false },
+          "scoreA": 3,
+          "scoreB": 0,
+          "winner": "FRA"
+        },
+        {
+          "id": 3,
+          "status": "final",
+          "date": "Jul 2",
+          "teamA": { "name": "South Africa", "abbr": "RSA", "isPlaceholder": false },
+          "teamB": { "name": "Canada", "abbr": "CAN", "isPlaceholder": false },
+          "scoreA": 1,
+          "scoreB": 0,
+          "winner": "RSA"
+        },
+        {
+          "id": 4,
+          "status": "final",
+          "date": "Jul 2",
+          "teamA": { "name": "Netherlands", "abbr": "NED", "isPlaceholder": false },
+          "teamB": { "name": "Morocco", "abbr": "MAR", "isPlaceholder": false },
+          "scoreA": 2,
+          "scoreB": 2,
+          "penA": 4,
+          "penB": 3,
+          "winner": "NED"
+        },
+        {
+          "id": 5,
+          "status": "final",
+          "date": "Jul 3",
+          "teamA": { "name": "Brazil", "abbr": "BRA", "isPlaceholder": false },
+          "teamB": { "name": "Japan", "abbr": "JPN", "isPlaceholder": false },
+          "scoreA": 2,
+          "scoreB": 1,
+          "winner": "BRA"
+        },
+        {
+          "id": 6,
+          "status": "final",
+          "date": "Jul 3",
+          "teamA": { "name": "Ivory Coast", "abbr": "CIV", "isPlaceholder": false },
+          "teamB": { "name": "Norway", "abbr": "NOR", "isPlaceholder": false },
+          "scoreA": 0,
+          "scoreB": 1,
+          "winner": "NOR"
+        },
+        {
+          "id": 7,
+          "status": "final",
+          "date": "Jul 4",
+          "teamA": { "name": "Mexico", "abbr": "MEX", "isPlaceholder": false },
+          "teamB": { "name": "Ecuador", "abbr": "ECU", "isPlaceholder": false },
+          "scoreA": 1,
+          "scoreB": 2,
+          "winner": "ECU"
+        },
+        {
+          "id": 8,
+          "status": "final",
+          "date": "Jul 4",
+          "teamA": { "name": "England", "abbr": "ENG", "isPlaceholder": false },
+          "teamB": { "name": "DR Congo", "abbr": "COD", "isPlaceholder": false },
+          "scoreA": 3,
+          "scoreB": 1,
+          "winner": "ENG"
+        }
+      ]
+    },
+    {
+      "id": "QF",
+      "name": "Quarter-final",
+      "matches": [
+        {
+          "id": 9,
+          "status": "final",
+          "date": "Jul 5",
+          "teamA": { "name": "Germany", "abbr": "GER", "isPlaceholder": false },
+          "teamB": { "name": "France", "abbr": "FRA", "isPlaceholder": false },
+          "scoreA": 1,
+          "scoreB": 2,
+          "winner": "FRA"
+        },
+        {
+          "id": 10,
+          "status": "live",
+          "date": "Jul 5",
+          "teamA": { "name": "South Africa", "abbr": "RSA", "isPlaceholder": false },
+          "teamB": { "name": "Netherlands", "abbr": "NED", "isPlaceholder": false },
+          "scoreA": 1,
+          "scoreB": 1,
+          "winner": null
+        },
+        {
+          "id": 11,
+          "status": "scheduled",
+          "date": "Jul 6",
+          "teamA": { "name": "Brazil", "abbr": "BRA", "isPlaceholder": false },
+          "teamB": { "name": "Norway", "abbr": "NOR", "isPlaceholder": false },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        },
+        {
+          "id": 12,
+          "status": "scheduled",
+          "date": "Jul 6",
+          "teamA": { "name": "Ecuador", "abbr": "ECU", "isPlaceholder": false },
+          "teamB": { "name": "England", "abbr": "ENG", "isPlaceholder": false },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        }
+      ]
+    },
+    {
+      "id": "SF",
+      "name": "Semi-final",
+      "matches": [
+        {
+          "id": 13,
+          "status": "scheduled",
+          "date": "Jul 8",
+          "teamA": { "name": "France", "abbr": "FRA", "isPlaceholder": false },
+          "teamB": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        },
+        {
+          "id": 14,
+          "status": "scheduled",
+          "date": "Jul 8",
+          "teamA": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "teamB": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        }
+      ]
+    },
+    {
+      "id": "3RD",
+      "name": "Play-off for third place",
+      "matches": [
+        {
+          "id": 15,
+          "status": "scheduled",
+          "date": "Jul 11",
+          "teamA": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "teamB": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": "Final",
+      "matches": [
+        {
+          "id": 16,
+          "status": "scheduled",
+          "date": "Jul 12",
+          "teamA": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "teamB": { "name": "TBD", "abbr": "TBD", "isPlaceholder": true },
+          "scoreA": null,
+          "scoreB": null,
+          "winner": null
+        }
+      ]
+    }
+  ]
+}

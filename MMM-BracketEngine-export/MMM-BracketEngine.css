@@ -1,0 +1,215 @@
+/* MMM-BracketEngine.css — Mirrored bracket layout (CSS Grid) */
+
+.be-wrapper {
+  font-family: inherit;
+  color: #fff;
+  padding: 0;
+  width: 100%;
+}
+
+.be-bracket {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+}
+
+.be-half {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.be-grid-half {
+  display: grid;
+  flex: 1;
+  width: 100%;
+  column-gap: 4px;
+  row-gap: 0;
+}
+
+.be-round-title {
+  font-size: 0.58em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  padding-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: end;
+}
+
+.be-match-wrap {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  align-self: stretch;
+}
+
+.be-conn-out,
+.be-conn-in {
+  width: 8px;
+  flex-shrink: 0;
+  align-self: stretch;
+  position: relative;
+}
+
+.be-conn-out svg,
+.be-conn-in  svg {
+  width: 8px;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.be-match-card {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+}
+
+.be-team-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  font-size: 0.68em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.be-team-row.be-winner {
+  background: rgba(56, 142, 60, 0.25);
+  color: #a5d6a7;
+  font-weight: 600;
+}
+
+.be-team-row.be-tbd {
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+
+.be-team-flag {
+  font-size: 1.1em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.be-team-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.be-team-score {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  min-width: 12px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.be-team-row.be-winner .be-team-score {
+  color: #a5d6a7;
+}
+
+.be-match-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.be-match-date {
+  font-size: 0.58em;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  padding: 1px 3px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.be-penalty-score {
+  font-size: 0.55em;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  padding: 1px 3px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.be-live-badge {
+  font-size: 0.55em;
+  font-weight: 700;
+  color: #ef5350;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 1px 3px;
+  background: rgba(239,83,80,0.15);
+  border-top: 1px solid rgba(239,83,80,0.25);
+}
+
+.be-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  flex-shrink: 0;
+  gap: 8px;
+  min-width: 88px;
+}
+
+.be-center-match {
+  width: 100%;
+  min-width: 80px;
+}
+
+.be-center-title {
+  font-size: 0.58em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  padding-bottom: 4px;
+  white-space: nowrap;
+}
+
+.be-center-match .be-match-card {
+  width: 100%;
+}
+
+.be-trophy {
+  font-size: 1.8em;
+  line-height: 1;
+}
+
+.be-champion-name {
+  font-size: 0.6em;
+  color: #f9a825;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  max-width: 60px;
+  word-break: break-word;
+}
+
+.be-updated {
+  font-size: 0.5em;
+  color: rgba(255,255,255,0.2);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.be-error {
+  font-size: 0.55em;
+  color: rgba(239,83,80,0.7);
+  text-align: right;
+  margin-top: 2px;
+}
