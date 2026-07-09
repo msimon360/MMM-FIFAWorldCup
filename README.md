@@ -8,7 +8,8 @@ A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays 
 
 ---
 ## ScreenShot
-<img width="1743" height="1044" alt="Screenshot 2026-07-03 at 10 09 42 AM" src="https://github.com/user-attachments/assets/5a5f0270-3864-4c15-9a85-a035facdf0e4" />
+<img width="720" height="431" alt="FIFA_WorldCup" src="https://github.com/user-attachments/assets/69b049c4-f60f-483c-a01f-e155d93609ea" />
+
 
 ---
 ## Installation
