@@ -1,5 +1,7 @@
 # MMM-FIFAWorldCup
 
+### NOTE: This module has been superceeded by [MMM-BracketEngine](https://github.com/msimon360/MMM-BracketEngine) and will not be maintained going forward. You are welcome to use it and it works as of July 2026 but [MMM-BracketEngine](https://github.com/msimon360/MMM-BracketEngine) is more flexible and is the recommended replacement.
+
 A [MagicMirror²](https://github.com/MichMich/MagicMirror) module that displays a live, mirrored FIFA World Cup 2026 knockout bracket — Round of 32 through the Final, with the trophy in the centre.
 
 **Data source:** FIFA's public soccer API (no API key required), with a built-in placeholder bracket as a fallback so the module always shows something even if FIFA is unreachable.
